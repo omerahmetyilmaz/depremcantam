@@ -13,6 +13,7 @@ import LeftHelperButtons from './components/LeftHelperButtons'
 import CompletionModal from './components/CompletionModal'
 import Confetti from './components/Confetti'
 import AppInfoModal from './components/AppInfoModal'
+import InterstitialAd from './components/InterstitialAd'
 
 function App() {
   // Layout Update v4
@@ -30,6 +31,7 @@ function App() {
   const [showCompletion, setShowCompletion] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [showAppInfo, setShowAppInfo] = useState(false)
+  const [showInterstitial, setShowInterstitial] = useState(false)
 
   const bagRef = useRef(null)
 
@@ -93,7 +95,15 @@ function App() {
   };
 
   // Inventory Handlers
-  const toggleInventory = () => setIsInventoryOpen(!isInventoryOpen);
+  const toggleInventory = () => {
+    if (!isInventoryOpen) {
+      // Show interstitial before opening bag (20% chance)
+      if (Math.random() < 0.2) {
+        setShowInterstitial(true);
+      }
+    }
+    setIsInventoryOpen(!isInventoryOpen);
+  };
 
   const handleRemoveItem = (id) => {
     setPackedItemIds(prev => prev.filter(itemId => itemId !== id));
@@ -266,6 +276,11 @@ function App() {
 
         {/* Confetti Effect */}
         {showConfetti && <Confetti />}
+
+        {/* Interstitial Ad */}
+        {showInterstitial && (
+          <InterstitialAd onClose={() => setShowInterstitial(false)} skipDelay={5} />
+        )}
 
         {/* Monetization: Ad Banner */}
         <AdBanner />

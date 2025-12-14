@@ -1316,3 +1316,76 @@ pointer-events: none;
     opacity: 0;
   }
 }
+
+/* Ad Banner Styles */
+.ad-banner-container {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-top: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+}
+
+.ad-label {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 0.55rem;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.ad-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.ad-icon {
+  font-size: 1.2rem;
+}
+
+.ad-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ad-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.ad-desc {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.ad-action {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ad-close {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 6px;
+}
