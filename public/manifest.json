@@ -13,13 +13,13 @@
     {
       "src": "bag-transparent.png",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any"
     },
     {
       "src": "bag-transparent.png",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "maskable"
     }
   ],
@@ -27,7 +27,7 @@
     {
       "src": "screenshot-mobile.png",
       "sizes": "390x844",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow"
     }
   ],
