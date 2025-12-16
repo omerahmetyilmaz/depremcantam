@@ -9,7 +9,9 @@ function AdBanner() {
         <div className="ad-banner-container">
             <div className="ad-label">REKLAM</div>
             <div className="ad-content">
-                <div className="ad-icon">📢</div>
+                <div className="ad-icon">
+                    <span className="ad-icon-emoji">📢</span>
+                </div>
                 <div className="ad-text">
                     <span className="ad-title">Google Reklam Alanı</span>
                     <span className="ad-desc">Burada gerçek reklamlar gösterilecek.</span>

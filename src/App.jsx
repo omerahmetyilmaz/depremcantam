@@ -34,6 +34,7 @@ function App() {
   const [showInterstitial, setShowInterstitial] = useState(false)
 
   const bagRef = useRef(null)
+  const streamRef = useRef(null)
 
   const packedCount = packedItemIds.length
   const totalItems = defaultItems.length
@@ -128,9 +129,95 @@ function App() {
   };
 
   // Safety Tool Handlers
-  const handleFlashlightToggle = () => {
-    setIsFlashlightOn(!isFlashlightOn);
+  const handleFlashlightToggle = async () => {
+    try {
+      if (!isFlashlightOn) {
+        // Turn on flashlight
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment' // Use back camera
+          }
+        });
+        
+        const track = stream.getVideoTracks()[0];
+        if (!track) {
+          stream.getTracks().forEach(track => track.stop());
+          setIsFlashlightOn(true);
+          return;
+        }
+
+        // Try to enable torch
+        let torchEnabled = false;
+
+        // Method 1: Check capabilities and use applyConstraints
+        if ('getCapabilities' in track) {
+          const capabilities = track.getCapabilities();
+          if (capabilities.torch === true || (capabilities.torch && capabilities.torch.length > 0)) {
+            try {
+              await track.applyConstraints({
+                advanced: [{ torch: true }]
+              });
+              torchEnabled = true;
+            } catch (e) {
+              console.log('applyConstraints failed, trying direct torch:', e);
+            }
+          }
+        }
+
+        // Method 2: Direct torch property (for some browsers)
+        if (!torchEnabled && 'torch' in track) {
+          try {
+            track.torch = true;
+            torchEnabled = true;
+          } catch (e) {
+            console.log('Direct torch assignment failed:', e);
+          }
+        }
+
+        if (torchEnabled) {
+          streamRef.current = stream;
+          setIsFlashlightOn(true);
+        } else {
+          // If torch is not supported, just show overlay
+          stream.getTracks().forEach(track => track.stop());
+          setIsFlashlightOn(true);
+        }
+      } else {
+        // Turn off flashlight
+        if (streamRef.current) {
+          const tracks = streamRef.current.getTracks();
+          tracks.forEach(track => {
+            if (track && 'torch' in track) {
+              track.torch = false;
+            }
+            track.stop();
+          });
+          streamRef.current = null;
+        }
+        setIsFlashlightOn(false);
+      }
+    } catch (error) {
+      console.error('Flashlight error:', error);
+      // If camera access fails, just show overlay as fallback
+      setIsFlashlightOn(!isFlashlightOn);
+    }
   };
+
+  // Cleanup flashlight on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        const tracks = streamRef.current.getTracks();
+        tracks.forEach(track => {
+          if (track && 'torch' in track) {
+            track.torch = false;
+          }
+          track.stop();
+        });
+        streamRef.current = null;
+      }
+    };
+  }, []);
 
   const handleEmergencyCallRequest = () => {
     setShowEmergencyConfirm(true);
@@ -262,12 +349,7 @@ function App() {
           confirmLabel="Evet, Ara"
         />
 
-        {/* Flashlight Overlay */}
-        {isFlashlightOn && (
-          <div className="flashlight-overlay" onClick={handleFlashlightToggle}>
-            <button className="flashlight-off-btn">🔦 KAPAT</button>
-          </div>
-        )}
+        {/* Flashlight - No overlay, just controls device light */}
 
         {/* Completion Modal */}
         {showCompletion && (

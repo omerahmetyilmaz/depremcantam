@@ -4,9 +4,38 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <!-- Viewport with safe area support for notch/punch-hole displays - Mobile App Only -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#3b82f6">
+  
+  <!-- Theme and Status Bar Colors -->
+  <meta name="theme-color" content="#a0d8ef">
+  <meta name="msapplication-navbutton-color" content="#a0d8ef">
+  
+  <!-- iOS PWA Settings -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Deprem Çantası">
+  <link rel="apple-touch-icon" href="/bag-transparent.png">
+  
+  <!-- Android PWA Settings -->
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <!-- Fullscreen PWA Settings - Mobile App -->
+  <meta name="display-mode" content="fullscreen">
+  <meta name="full-screen" content="yes">
+  <meta name="browsermode" content="application">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Deprem Çantası">
+  
+  <!-- Prevent default browser UI -->
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="msapplication-navbutton-color" content="#a0d8ef">
+  <meta name="msapplication-starturl" content="/">
+  
+  <!-- Disable phone number detection -->
+  <meta name="format-detection" content="telephone=no">
+  
   <title>Deprem Çantası</title>
 </head>
 
@@ -14,6 +43,91 @@
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
   <script>
+    // Mobile App - Full Screen Mode
+    (function() {
+      // Set viewport height to actual screen height (for mobile browsers)
+      function setViewportHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+        // Force full screen
+        document.documentElement.style.height = '100%';
+        document.documentElement.style.height = '100dvh';
+        document.body.style.height = '100%';
+        document.body.style.height = '100dvh';
+      }
+      
+      // Hide address bar on mobile browsers
+      function hideAddressBar() {
+        if (window.innerHeight < window.outerHeight || window.scrollY === 0) {
+          setTimeout(function() {
+            window.scrollTo(0, 1);
+            setTimeout(function() {
+              window.scrollTo(0, 0);
+            }, 0);
+          }, 0);
+        }
+      }
+      
+      // Prevent zoom on double tap
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(e) {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+          e.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+      
+      // Prevent pull-to-refresh
+      let touchStartY = 0;
+      document.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      
+      document.addEventListener('touchmove', function(e) {
+        const touchY = e.touches[0].clientY;
+        const scrollable = e.target.closest('.supply-shelf, .inventory-list, .modal-content');
+        
+        // Allow scrolling in scrollable containers
+        if (scrollable) {
+          return;
+        }
+        
+        // Prevent pull-to-refresh at top
+        if (window.scrollY === 0 && touchY > touchStartY) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      
+      // Run on load
+      window.addEventListener('load', function() {
+        setViewportHeight();
+        hideAddressBar();
+        // Force full screen after a short delay
+        setTimeout(function() {
+          setViewportHeight();
+          hideAddressBar();
+        }, 100);
+      });
+      
+      // Handle resize and orientation change
+      window.addEventListener('resize', function() {
+        setViewportHeight();
+        hideAddressBar();
+      });
+      
+      window.addEventListener('orientationchange', function() {
+        setTimeout(function() {
+          setViewportHeight();
+          hideAddressBar();
+        }, 200);
+      });
+      
+      // Initial setup
+      setViewportHeight();
+    })();
+
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')

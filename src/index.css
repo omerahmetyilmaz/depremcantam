@@ -9,9 +9,14 @@
   --glass-border: rgba(255, 255, 255, 0.8);
   --shadow-game: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   --slot-bg: #e2e8f0;
-  /* Phone dimensions */
+  /* Phone dimensions - Desktop only */
   --phone-width: 375px;
   --phone-height: 812px;
+  /* Safe area insets for notch/punch-hole displays */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
 * {
@@ -19,6 +24,15 @@
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  /* Prevent text selection on mobile */
+  -webkit-touch-callout: none;
+}
+
+/* Prevent overscroll/bounce effect on mobile */
+html {
+  overscroll-behavior: none;
+  overflow: hidden;
+  height: 100%;
 }
 
 ::-webkit-scrollbar {
@@ -30,19 +44,26 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-
-  /* Restore Layout */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  /* Mobile App - No centering */
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
 
   /* Restore Background (Blue Gradient) */
-  background: radial-gradient(circle at center, #60a5fa 0%, #2563eb 100%);
+  background: #a0d8ef;
   color: #1e293b;
 
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Prevent pull-to-refresh */
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Reusable Cute Text Mixin Concept (applied manually) */
@@ -116,38 +137,50 @@ body {
   font-weight: 900;
 }
 
-/* Phone Frame Container - Desktop Only */
+/* Root - Always Full Screen (Mobile App) */
 #root {
-  width: var(--phone-width);
-  height: var(--phone-height);
-  max-height: 90vh;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
   background-color: #a0d8ef;
-  border-radius: 40px;
+  border-radius: 0;
   overflow: hidden;
-  position: relative;
-  box-shadow:
-    0 0 0 12px #1f2937,
-    0 0 0 14px #374151,
-    0 25px 50px rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  box-shadow: none;
+  /* Safe area padding for notch/punch-hole displays */
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
 }
 
-/* Mobile / PWA / Standalone Mode - Remove phone frame */
-@media screen and (max-width: 500px),
-screen and (display-mode: standalone),
-screen and (display-mode: fullscreen) {
-  body {
-    background: #a0d8ef;
-    /* Match app background */
+/* Always apply mobile styles - This is a mobile app */
+html {
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+  /* Native-like touch feedback */
+  .item-card,
+  .helper-btn,
+  .confirm-btn,
+  .inventory-item {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+    transition: transform 0.05s ease-out, opacity 0.05s ease-out;
   }
 
-  #root {
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    /* Dynamic viewport height for mobile browsers */
-    max-height: none;
-    border-radius: 0;
-    box-shadow: none;
+  .item-card:active,
+  .helper-btn:active,
+  .confirm-btn:active,
+  .inventory-item:active {
+    transform: scale(0.95);
+    opacity: 0.9;
   }
 }
 
@@ -187,6 +220,20 @@ screen and (display-mode: fullscreen) {
   position: relative;
   z-index: 5;
   overflow: hidden;
+}
+
+/* Phone Frame - Always Full Screen (Mobile App) */
+.phone-frame {
+  width: 100%;
+  height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  height: calc(var(--vh, 1vh) * 100);
+  position: relative;
+  overflow: hidden;
+  /* Ensure it fills the screen */
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* Top: Backpack Area - 75% */
@@ -251,6 +298,8 @@ screen and (display-mode: fullscreen) {
   border-top-right-radius: 30px;
   /* Remove padding from main container to let scroll container touch edges if needed, but we keep top padding for header */
   padding: 20px 15px 0 15px;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  /* Space for ad banner + safe area */
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
   border-top: 5px solid #e2e8f0;
   position: relative;
@@ -310,7 +359,8 @@ screen and (display-mode: fullscreen) {
   grid-template-columns: repeat(3, 1fr);
   /* 3 columns */
   gap: 8px;
-  padding-bottom: 80px;
+  padding-bottom: 10px;
+  /* Reduced since container already has padding-bottom */
 }
 
 /* Cards - Simple clean style, NO BORDER */
@@ -993,22 +1043,34 @@ screen and (display-mode: fullscreen) {
   box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
 }
 
-/* Ad Banner Styles */
+/* Ad Banner Styles - Fixed at bottom of mobile app screen (not viewport) */
 .ad-banner-container {
   position: absolute;
   bottom: 0;
   left: 0;
+  right: 0;
   width: 100%;
   height: 60px;
+  max-height: 60px;
+  min-height: 60px;
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 8px 10px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-  z-index: 100;
+  z-index: 1000;
   font-family: 'Roboto', sans-serif;
   /* Google Ad font */
+  /* Ensure it stays at bottom of phone-frame */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  /* Only cover mobile app screen, not entire viewport */
+  max-width: 100%;
+  /* Prevent overflow */
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .ad-label {
@@ -1026,19 +1088,43 @@ screen and (display-mode: fullscreen) {
   display: flex;
   align-items: center;
   width: 100%;
-  gap: 10px;
+  min-width: 0;
+  gap: 6px;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+  max-height: 44px;
 }
 
 .ad-icon {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  max-width: 28px;
+  max-height: 28px;
   background: #3b82f6;
   color: white;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.ad-icon-emoji {
+  font-size: 0.75rem;
+  line-height: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ad-text {
@@ -1046,17 +1132,29 @@ screen and (display-mode: fullscreen) {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+  min-width: 0;
+  overflow: hidden;
+  justify-content: center;
+  gap: 2px;
 }
 
 .ad-title {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
 }
 
 .ad-desc {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
 }
 
 .ad-action {
@@ -1064,10 +1162,14 @@ screen and (display-mode: fullscreen) {
   color: white;
   border: none;
   font-weight: 700;
-  font-size: 0.75rem;
-  padding: 6px 12px;
+  font-size: 0.7rem;
+  padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  height: fit-content;
+  line-height: 1.2;
 }
 
 .ad-close {
@@ -1088,14 +1190,17 @@ screen and (display-mode: fullscreen) {
   border-top-left-radius: 4px;
 }
 
-/* Quick Actions Bar (Centered Row) */
+/* Quick Actions Bar (Centered Row) - Equally Spaced Between Progress Text and Safety Tip */
 .quick-actions-container {
   position: absolute;
-  top: 64%;
-  /* Moved down from 60% */
-  /* Reverted from 68% to fix overlap */
+  /* Positioned equally between progress-text bottom and safety-tip-banner top */
+  /* Progress text ends at: padding-top (30px) + bag (150px) + progress margin-top (25px) + bar (24px) + text margin-top (10px) + text height (~30px) = ~269px */
+  /* Safety tip banner starts at: backpack-area height - 100px (bottom: 20px + height ~80px) */
+  /* For equal spacing: position at midpoint = (269px + (100% - 100px)) / 2 = (100% + 169px) / 2 */
+  top: calc((100% + 169px) / 2);
   left: 50%;
   transform: translate(-50%, -50%);
+  /* Center horizontally and vertically align icon center */
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1333,75 +1438,4 @@ screen and (display-mode: fullscreen) {
   }
 }
 
-/* Ad Banner Styles */
-.ad-banner-container {
-  position: relative;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-top: 1px solid #e2e8f0;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 50px;
-}
-
-.ad-label {
-  position: absolute;
-  top: 2px;
-  left: 4px;
-  font-size: 0.55rem;
-  color: #94a3b8;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.ad-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-}
-
-.ad-icon {
-  font-size: 1.2rem;
-}
-
-.ad-text {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.ad-title {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.ad-desc {
-  font-size: 0.65rem;
-  color: #64748b;
-}
-
-.ad-action {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.ad-close {
-  position: absolute;
-  top: 2px;
-  right: 4px;
-  background: none;
-  border: none;
-  font-size: 1rem;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 2px 6px;
-}
+/* Ad Banner duplicate styles removed - using fixed position version above */
