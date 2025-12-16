@@ -11,13 +11,13 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "bag-transparent.png",
+      "src": "pwa-192x192.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "bag-transparent.png",
+      "src": "pwa-192x192.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
