@@ -12,21 +12,30 @@
   <meta name="theme-color" content="#a0d8ef">
   <meta name="msapplication-navbutton-color" content="#a0d8ef">
   
-  <!-- iOS PWA Settings -->
+  <!-- iOS PWA Settings - Full Screen -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Deprem Çantası">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <link rel="apple-touch-icon" href="/bag-transparent.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/pwa-192x192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/pwa-512x512.png">
   
-  <!-- Android PWA Settings -->
+  <!-- Android PWA Settings - For PWA Builder APK / TWA -->
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="android-mobile-web-app-capable" content="yes">
   
-  <!-- Fullscreen PWA Settings - Mobile App -->
+  <!-- Fullscreen PWA Settings - Mobile App / APK -->
   <meta name="display-mode" content="fullscreen">
   <meta name="full-screen" content="yes">
   <meta name="browsermode" content="application">
-  <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="Deprem Çantası">
+  
+  <!-- PWA Builder / TWA (Trusted Web Activity) Settings for APK -->
+  <meta name="theme-color" content="#a0d8ef">
+  
+  <!-- WebView Settings for APK - Hide address bar -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
   
   <!-- Prevent default browser UI -->
   <meta name="msapplication-tap-highlight" content="no">
@@ -45,6 +54,13 @@
   <script>
     // Mobile App - Full Screen Mode
     (function() {
+      // Check if running as PWA (standalone or fullscreen)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                          window.matchMedia('(display-mode: fullscreen)').matches ||
+                          window.matchMedia('(display-mode: minimal-ui)').matches ||
+                          (window.navigator.standalone === true) ||
+                          (document.referrer.includes('android-app://'));
+      
       // Set viewport height to actual screen height (for mobile browsers)
       function setViewportHeight() {
         const vh = window.innerHeight * 0.01;
@@ -54,17 +70,65 @@
         document.documentElement.style.height = '100dvh';
         document.body.style.height = '100%';
         document.body.style.height = '100dvh';
+        
+        // If PWA mode, ensure no address bar
+        if (isStandalone) {
+          document.documentElement.style.position = 'fixed';
+          document.body.style.position = 'fixed';
+          document.documentElement.style.width = '100%';
+          document.body.style.width = '100%';
+          document.documentElement.style.top = '0';
+          document.body.style.top = '0';
+          document.documentElement.style.left = '0';
+          document.body.style.left = '0';
+        }
       }
       
-      // Hide address bar on mobile browsers
+      // Hide address bar on mobile browsers - Aggressive method
       function hideAddressBar() {
-        if (window.innerHeight < window.outerHeight || window.scrollY === 0) {
+        // In PWA mode, address bar should not be visible, but ensure it's hidden
+        if (isStandalone) {
+          // PWA mode - ensure no address bar
+          document.documentElement.style.overflow = 'hidden';
+          document.body.style.overflow = 'hidden';
+          document.documentElement.style.position = 'fixed';
+          document.body.style.position = 'fixed';
+          document.documentElement.style.width = '100%';
+          document.body.style.width = '100%';
+          document.documentElement.style.height = '100%';
+          document.body.style.height = '100%';
+          document.documentElement.style.height = '100dvh';
+          document.body.style.height = '100dvh';
+          document.documentElement.style.top = '0';
+          document.body.style.top = '0';
+          document.documentElement.style.left = '0';
+          document.body.style.left = '0';
+        } else {
+          // Browser mode - try to hide address bar
           setTimeout(function() {
             window.scrollTo(0, 1);
             setTimeout(function() {
               window.scrollTo(0, 0);
-            }, 0);
+            }, 10);
           }, 0);
+          
+          if (window.scrollY === 0) {
+            window.scrollTo(0, 1);
+            setTimeout(function() {
+              window.scrollTo(0, 0);
+            }, 0);
+          }
+          
+          document.documentElement.style.overflow = 'hidden';
+          document.body.style.overflow = 'hidden';
+          document.documentElement.style.position = 'fixed';
+          document.body.style.position = 'fixed';
+          document.documentElement.style.width = '100%';
+          document.body.style.width = '100%';
+          document.documentElement.style.height = '100%';
+          document.body.style.height = '100%';
+          document.documentElement.style.height = '100dvh';
+          document.body.style.height = '100dvh';
         }
       }
       
@@ -99,15 +163,27 @@
         }
       }, { passive: false });
       
+      // Run immediately and on load
+      hideAddressBar();
+      setViewportHeight();
+      
       // Run on load
       window.addEventListener('load', function() {
         setViewportHeight();
         hideAddressBar();
-        // Force full screen after a short delay
+        // Force full screen multiple times to ensure it works
         setTimeout(function() {
-          setViewportHeight();
           hideAddressBar();
+          setViewportHeight();
+        }, 50);
+        setTimeout(function() {
+          hideAddressBar();
+          setViewportHeight();
         }, 100);
+        setTimeout(function() {
+          hideAddressBar();
+          setViewportHeight();
+        }, 300);
       });
       
       // Handle resize and orientation change
@@ -120,11 +196,29 @@
         setTimeout(function() {
           setViewportHeight();
           hideAddressBar();
-        }, 200);
+        }, 100);
+        setTimeout(function() {
+          setViewportHeight();
+          hideAddressBar();
+        }, 300);
       });
       
-      // Initial setup
-      setViewportHeight();
+      // Prevent address bar on scroll
+      let lastScrollTop = 0;
+      window.addEventListener('scroll', function() {
+        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+        if (currentScroll <= 0) {
+          window.scrollTo(0, 1);
+        }
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+      }, false);
+      
+      // Prevent address bar on touch
+      document.addEventListener('touchstart', function() {
+        if (window.scrollY === 0) {
+          window.scrollTo(0, 1);
+        }
+      }, { passive: true });
     })();
 
     // Service Worker Registration
