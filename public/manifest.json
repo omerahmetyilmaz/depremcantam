@@ -11,15 +11,15 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "bag-transparent.jpg",
+      "src": "/bag-transparent.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "bag-transparent.jpg",
+      "src": "/bag-transparent.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ],
